@@ -13,7 +13,7 @@ const ERC1155TOKEN = mongoose.Schema({
   viewed: { type: Number, default: 0 },
   listedAt: { type: Date },
   soldAt: { type: Date },
-  saleEndsdAt: { type: Date },
+  saleEndsAt: { type: Date },
 })
 
 mongoose.model('ERC1155TOKEN', ERC1155TOKEN)

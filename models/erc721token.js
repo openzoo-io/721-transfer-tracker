@@ -15,7 +15,7 @@ const ERC721TOKEN = mongoose.Schema(
     createdAt: { type: Date, default: Date.now },
     listedAt: { type: Date },
     soldAt: { type: Date },
-    saleEndsdAt: { type: Date },
+    saleEndsAt: { type: Date },
   },
   {
     timestamps: true,
