@@ -16,24 +16,40 @@ const ftmScanApiKey = process.env.FTM_SCAN_API_KEY
 const validatorAddress = process.env.VALIDATORADDRESS
 const limit = 99999999999
 
-const trackListing = require('../services/transactiontracker')
 const contractutils = require('../services/contract.utils')
-
-const checkIfHasMinted = async (address) => {
-  let sc = contractutils.loadContractFromAddress(address)
-  try {
-    let totalSupply = await sc.totalSupply()
-    console.log(`total supply is ${totalSupply}`, address)
-    if (totalSupply > 0) return true
-    return false
-  } catch (error) {
-    console.log(error)
-    return false
-  }
-}
 
 const trackerc721 = async (begin, end) => {
   let contracts = new Array()
+
+  const func = async () => {
+    // add to db
+    const promises = contracts.map(async (contract) => {
+      let erc721 = null
+      try {
+        erc721 = await ERC721CONTRACT.findOne({ address: contract.address })
+      } catch (error) {
+        erc721 = null
+      }
+      if (!erc721) {
+        try {
+          let minter = new ERC721CONTRACT()
+          minter.address = contract.address
+          minter.name = contract.name
+          minter.symbol = contract.symbol
+          await minter.save()
+          let category = new Category()
+          category.minterAddress = contract.address
+          category.type = 721
+          await category.save()
+          await collectionTracker.trackCollectionTransfer(contract.address)
+        } catch (error) {}
+      }
+    })
+
+    await Promise.all(promises)
+    await collectionTracker.trackERC721Distribution(contracts)
+  }
+
   let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`
   let result = await axios.get(request)
   let tnxs = result.data.result
@@ -49,41 +65,15 @@ const trackerc721 = async (begin, end) => {
       if (
         !contracts.some((contract) => contract.address == contractInfo.address)
       ) {
-        let hasMinted = await checkIfHasMinted(contractInfo.address)
-        if (hasMinted) contracts.push(contractInfo)
+        contracts.push(contractInfo)
       }
     })
     await Promise.all(promises)
+    await func()
   }
 
-  const func = async () => {
-    // add to db
-    const promises = contracts.map(async (contract) => {
-      let erc721 = null
-      try {
-        erc721 = await ERC721CONTRACT.findOne({ address: contract.address })
-      } catch (error) {
-        erc721 = null
-      }
-      if (!erc721) {
-        let minter = new ERC721CONTRACT()
-        minter.address = contract.address
-        minter.name = contract.name
-        minter.symbol = contract.symbol
-        await minter.save()
-        let category = new Category()
-        category.minterAddress = contract.address
-        category.type = 721
-        await category.save()
-        await collectionTracker.trackCollectionTransfer(contract.address)
-      }
-    })
-
-    await Promise.all(promises)
-  }
-
-  await func()
-  await collectionTracker.trackERC721Distribution(contracts)
+  // await func()
+  // await collectionTracker.trackERC721Distribution(contracts)
 
   return end
 }
@@ -92,7 +82,6 @@ let start = 0
 
 const trackAll721s = async () => {
   console.log('erc721 tracker has been started')
-  trackListing()
   console.log('tnx tracker started')
 
   const func = async () => {
