@@ -43,6 +43,8 @@ const trackerc721 = async (begin, end) => {
           await category.save()
           await collectionTracker.trackCollectionTransfer(contract.address)
         } catch (error) {}
+      } else {
+        await collectionTracker.trackCollectionTransfer(contract.address)
       }
     })
 
