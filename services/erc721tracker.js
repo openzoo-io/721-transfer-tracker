@@ -16,8 +16,6 @@ const ftmScanApiKey = process.env.FTM_SCAN_API_KEY
 const validatorAddress = process.env.VALIDATORADDRESS
 const limit = 99999999999
 
-const contractutils = require('../services/contract.utils')
-
 const trackerc721 = async (begin, end) => {
   let contracts = new Array()
 
@@ -74,18 +72,12 @@ const trackerc721 = async (begin, end) => {
     await func()
   }
 
-  // await func()
-  // await collectionTracker.trackERC721Distribution(contracts)
-
   return end
 }
 
 let start = 0
 
 const trackAll721s = async () => {
-  console.log('erc721 tracker has been started')
-  console.log('tnx tracker started')
-
   const func = async () => {
     let currentBlockHeight = await provider.getBlockNumber()
 

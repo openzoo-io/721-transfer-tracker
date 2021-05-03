@@ -5,6 +5,7 @@ const ERC1155TOKEN = mongoose.Schema({
   tokenID: { type: Number, required: true },
   tokenURI: { type: String, required: true },
   symbol: { type: String },
+  owner: { type: Map },
   supply: { type: Number, default: 0 },
   royalty: { type: Number, default: 0 },
   category: [{ type: String }],
