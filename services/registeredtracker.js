@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 
 const ERC721CONTRACT = mongoose.model('ERC721CONTRACT')
-const ERC1155CONTRACT = mongoose.model('ERC1155CONTRACT')
 
 const collectionTracker = require('./collectiontracker')
 
