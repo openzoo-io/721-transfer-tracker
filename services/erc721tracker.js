@@ -3,7 +3,7 @@ const axios = require('axios')
 const mongoose = require('mongoose')
 const ethers = require('ethers')
 
-let rpcapi = process.env('MAINNET_RPC')
+let rpcapi = process.env.MAINNET_RPC
 
 const provider = new ethers.providers.JsonRpcProvider(rpcapi, 250)
 

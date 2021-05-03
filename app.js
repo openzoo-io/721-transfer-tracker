@@ -19,7 +19,7 @@ require('./models/category')
 
 const trackAll721s = require('./services/erc721tracker')
 
-const uri = process.env('DB_URL')
+const uri = process.env.DB_URL
 
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 const db = mongoose.connection
