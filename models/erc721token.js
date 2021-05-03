@@ -38,7 +38,7 @@ ERC721TOKEN.methods.toERC721TOKENJson = function () {
     createdAt: this.createdAt,
     listedAt: this.listedAt,
     soldAt: this.soldAt,
-    saleEndsdAt: this.saleEndsdAt,
+    saleEndsAt: this.saleEndsdAt,
   }
 }
 
