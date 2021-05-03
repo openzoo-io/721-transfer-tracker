@@ -2,9 +2,7 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const contractutils = require('./contract.utils')
 
-require('../models/transferhistory')
 require('../models/erc721token')
-const TransferHistory = mongoose.model('TransferHistory')
 const ERC721TOKEN = mongoose.model('ERC721TOKEN')
 
 const trackCollectionTransfer = async (address) => {
@@ -29,24 +27,6 @@ const trackCollectionTransfer = async (address) => {
       newTk.tokenURI = tokenURI
       newTk.owner = to
       await newTk.save()
-    }
-
-    let history = await TransferHistory.findOne({
-      collectionAddress: address,
-      tokenID: tokenID,
-      to: from,
-    })
-    if (history) {
-      history.from = from
-      history.to = to
-      await history.save()
-    } else {
-      let newHistory = new TransferHistory()
-      newHistory.collectionAddress = address
-      newHistory.from = from
-      newHistory.to = to
-      newHistory.tokenID = tokenID
-      await newHistory.save()
     }
   })
   return contract
@@ -92,23 +72,6 @@ const trackERC721Distribution = async (contracts) => {
                 newTk.owner = from
                 await newTk.save()
               }
-            }
-            let history = await TransferHistory.findOne({
-              collectionAddress: contract.address,
-              tokenID: tokenID,
-              to: from,
-            })
-            if (history) {
-              history.from = from
-              history.to = to
-              await token.save()
-            } else {
-              let newHistory = new TransferHistory()
-              newHistory.collectionAddress = contract.address
-              newHistory.from = from
-              newHistory.to = to
-              newHistory.tokenID = tokenID
-              await newHistory.save()
             }
           }
         } catch (error) {
