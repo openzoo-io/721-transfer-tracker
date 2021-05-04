@@ -61,7 +61,7 @@ const trackERC721Distribution = async (contracts) => {
               tokenID: tokenID,
             })
             if (erc721token) {
-              erc721token.owner = from
+              erc721token.owner = to
               await erc721token.save()
             } else {
               if (tokenURI.startsWith('https://')) {
@@ -69,7 +69,7 @@ const trackERC721Distribution = async (contracts) => {
                 newTk.contractAddress = contract.address
                 newTk.tokenID = tokenID
                 newTk.tokenURI = tokenURI
-                newTk.owner = from
+                newTk.owner = to
                 await newTk.save()
               }
             }
