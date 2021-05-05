@@ -42,7 +42,6 @@ const trackerc721 = async (begin, end) => {
           await collectionTracker.trackCollectionTransfer(contract.address)
         } catch (error) {}
       } else {
-        await collectionTracker.trackCollectionTransfer(contract.address)
       }
     })
 
