@@ -15,6 +15,7 @@ require('./models/bid')
 require('./models/highestblock')
 require('./models/offer')
 require('./models/category')
+require('./models/auction')
 
 const trackAll721s = require('./services/erc721tracker')
 
