@@ -74,13 +74,13 @@ const trackerc721 = async (begin, end) => {
   return end
 }
 
-let start = 0
+let start = 1
 
 const trackAll721s = async () => {
   const func = async () => {
     let currentBlockHeight = await provider.getBlockNumber()
 
-    start = await trackerc721(start, currentBlockHeight)
+    start = await trackerc721(start - 1, currentBlockHeight)
     if (currentBlockHeight > limit) start = 0
 
     setTimeout(async () => {
