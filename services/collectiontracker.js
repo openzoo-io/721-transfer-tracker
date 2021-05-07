@@ -18,8 +18,10 @@ const trackCollectionTransfer = async (address) => {
     })
 
     if (erc721token) {
-      erc721token.owner = to
-      await erc721token.save()
+      if (erc721token.owner != to) {
+        erc721token.owner = to
+        await erc721token.save()
+      }
     } else {
       let newTk = new ERC721TOKEN()
       newTk.contractAddress = address
@@ -52,7 +54,6 @@ const trackERC721Distribution = async (contracts) => {
       if (supply == 1) {
         try {
           let tokenURI = await sc.tokenURI(tokenID)
-          let from = contract.address
           if (!tokenURI.startsWith('https://')) {
           } else {
             let to = await sc.ownerOf(tokenID)
@@ -61,8 +62,10 @@ const trackERC721Distribution = async (contracts) => {
               tokenID: tokenID,
             })
             if (erc721token) {
-              erc721token.owner = to
-              await erc721token.save()
+              if (erc721token.owner != to) {
+                erc721token.owner = to
+                await erc721token.save()
+              }
             } else {
               if (tokenURI.startsWith('https://')) {
                 let newTk = new ERC721TOKEN()
