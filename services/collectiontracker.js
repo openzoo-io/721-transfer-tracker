@@ -5,11 +5,13 @@ const contractutils = require('./contract.utils')
 require('../models/erc721token')
 const ERC721TOKEN = mongoose.model('ERC721TOKEN')
 
-const trackCollectionTransfer = async (address) => {
+const trackCollectionTransfer = (address) => {
   console.log(`on transfer of ${address} started`)
   let contract = contractutils.loadContractFromAddress(address)
   if (!contract) return null
   contract.on('Transfer', async (from, to, tokenID) => {
+    console.log('transfer')
+    console.log(from, to, tokenID)
     let tokenURI = await contract.tokenURI(tokenID)
     if (!tokenURI.startsWith('https://')) return
     let erc721token = await ERC721TOKEN.findOne({
@@ -18,6 +20,8 @@ const trackCollectionTransfer = async (address) => {
     })
 
     if (erc721token) {
+      console.log('tk exists')
+      console.log(erc721token)
       if (erc721token.owner != to) {
         erc721token.owner = to
         await erc721token.save()
@@ -28,7 +32,9 @@ const trackCollectionTransfer = async (address) => {
       newTk.tokenID = tokenID
       newTk.tokenURI = tokenURI
       newTk.owner = to
-      await newTk.save()
+      let test = await newTk.save()
+      console.log('tk newly saved')
+      console.log(test)
     }
   })
   return contract
