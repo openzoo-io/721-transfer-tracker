@@ -84,6 +84,8 @@ const trackERC721Distribution = async (contracts) => {
             }
           }
         } catch (error) {
+          console.log('error')
+          console.log(totalSupplies.get(contract.address))
           totalSupplies.set(contract.address, 0)
           total--
         }
