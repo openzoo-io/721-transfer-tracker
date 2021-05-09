@@ -43,6 +43,51 @@ const trackCollectionTransfer = (address) => {
 const trackERC721Distribution = async (contracts) => {
   let scs = new Map()
   let totalSupplies = new Map()
+  let promises = contracts.map(async (contract) => {
+    let sc = contractutils.loadContractFromAddress(contract.address)
+    scs.set(contract.address, sc)
+    let totalSupply = await sc.totalSupply()
+    totalSupplies.set(contract.address, totalSupply)
+  })
+  await Promise.all(promises)
+
+  contracts.map(async (contract) => {
+    let sc = scs.get(contract.address)
+    let ts = totalSupplies.get(contract.address)
+    const func = async (i) => {
+      if (i > ts) return
+
+      let tk = await ERC721TOKEN.find({
+        contractAddress: contract.address,
+        tokenID: i,
+      })
+      if (tk) {
+        let owner = await sc.ownerOf(i)
+        let to = tk.owner
+        if (to != owner) {
+          tk.owner = to
+          await tk.save()
+        }
+      } else {
+        let tokenURI = await sc.tokenURI(i)
+        if (tokenURI.startsWith('https://')) {
+          let newTk = new ERC721TOKEN()
+          newTk.contractAddress = contract.address
+          newTk.tokenID = tokenID
+          newTk.tokenURI = tokenURI
+          newTk.owner = to
+          await newTk.save()
+        }
+      }
+      func(i + 1)
+    }
+    func(1)
+  })
+}
+
+const _trackERC721Distribution = async (contracts) => {
+  let scs = new Map()
+  let totalSupplies = new Map()
   contracts.map((contract) => {
     scs.set(
       contract.address,
