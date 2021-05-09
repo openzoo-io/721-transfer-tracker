@@ -16,38 +16,10 @@ const ftmScanApiKey = process.env.FTM_SCAN_API_KEY
 const validatorAddress = process.env.VALIDATORADDRESS
 const limit = 99999999999
 
+let trackedAddresses = []
+
 const trackerc721 = async (begin, end) => {
   let contracts = new Array()
-
-  const func = async () => {
-    // add to db
-    const promises = contracts.map(async (contract) => {
-      let erc721 = null
-      try {
-        erc721 = await ERC721CONTRACT.findOne({ address: contract.address })
-      } catch (error) {
-        erc721 = null
-      }
-      if (!erc721) {
-        try {
-          let minter = new ERC721CONTRACT()
-          minter.address = contract.address
-          minter.name = contract.name
-          minter.symbol = contract.symbol
-          await minter.save()
-          let category = new Category()
-          category.minterAddress = contract.address
-          category.type = 721
-          await category.save()
-          await collectionTracker.trackCollectionTransfer(contract.address)
-        } catch (error) {}
-      } else {
-      }
-    })
-
-    await Promise.all(promises)
-    await collectionTracker.trackERC721Distribution(contracts)
-  }
 
   let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`
   let result = await axios.get(request)
@@ -55,6 +27,7 @@ const trackerc721 = async (begin, end) => {
 
   if (tnxs.length == 0) return end
   if (tnxs) {
+    console.log('new transfer')
     let promises = tnxs.map(async (tnx) => {
       let contractInfo = {
         address: tnx.contractAddress,
@@ -64,11 +37,39 @@ const trackerc721 = async (begin, end) => {
       if (
         !contracts.some((contract) => contract.address == contractInfo.address)
       ) {
-        contracts.push(contractInfo)
+        if (!trackedAddresses.includes(contractInfo.address)) {
+          contracts.push(contractInfo)
+          let erc721 = null
+          try {
+            erc721 = await ERC721CONTRACT.findOne({
+              address: contractInfo.address,
+            })
+          } catch (error) {
+            erc721 = null
+          }
+          if (!erc721) {
+            try {
+              let minter = new ERC721CONTRACT()
+              minter.address = contractInfo.address
+              minter.name = contractInfo.name
+              minter.symbol = contractInfo.symbol
+              await minter.save()
+              let category = new Category()
+              category.minterAddress = contractInfo.address
+              category.type = 721
+              await category.save()
+            } catch (error) {}
+          }
+          if (!trackedAddresses.includes(contractInfo.address)) {
+            trackedAddresses.push(contractInfo.address)
+            console.log('tracked', contractInfo.address)
+            collectionTracker.trackCollectionTransfer(contractInfo.address)
+          }
+        }
       }
     })
     await Promise.all(promises)
-    await func()
+    await collectionTracker.trackERC721Distribution(contracts)
   }
 
   return end
@@ -80,7 +81,7 @@ const trackAll721s = async () => {
   const func = async () => {
     let currentBlockHeight = await provider.getBlockNumber()
 
-    start = await trackerc721(start - 1, currentBlockHeight)
+    start = await trackerc721(start, currentBlockHeight)
     if (currentBlockHeight > limit) start = 0
 
     setTimeout(async () => {
