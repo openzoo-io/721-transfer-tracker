@@ -103,46 +103,6 @@ const trackERC721Distribution = async (contracts) => {
       await Promise.all(promises)
       tokenID++
     }
-
-    // contracts.map(async (contract) => {
-    //   let sc = scs.get(contract.address)
-    //   let ts = totalSupplies.get(contract.address)
-    //   const func = async (i) => {
-    //     if (i > ts) return
-
-    //     let tk = await ERC721TOKEN.findOne({
-    //       contractAddress: contract.address,
-    //       tokenID: i,
-    //     })
-    //     try {
-    //       owner = await sc.ownerOf(i)
-    //       if (tk) {
-    //         let to = tk.owner
-    //         if (to != owner) {
-    //           tk.owner = owner
-    //           await tk.save()
-    //         }
-    //       } else {
-    //         try {
-    //           let tokenURI = await sc.tokenURI(i)
-    //           if (tokenURI.startsWith('https://')) {
-    //             let newTk = new ERC721TOKEN()
-    //             newTk.contractAddress = contract.address
-    //             newTk.tokenID = i
-    //             newTk.tokenURI = tokenURI
-    //             newTk.owner = owner
-    //             await newTk.save()
-    //           }
-    //         } catch (error) {
-    //           console.log(i)
-    //         }
-    //       }
-    //     } catch (error) {}
-
-    //     func(i + 1)
-    //   }
-    //   func(1)
-    // })
   } catch (error) {}
 }
 
