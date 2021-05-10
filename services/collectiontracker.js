@@ -47,54 +47,102 @@ const trackERC721Distribution = async (contracts) => {
     try {
       let promises = contracts.map(async (contract) => {
         let sc = contractutils.loadContractFromAddress(contract.address)
-        let totalSupply = await sc.totalSupply()
-        totalSupply = parseFloat(totalSupply.toString())
-        console.log(contract.address, totalSupply)
-        totalSupplies.set(contract.address, totalSupply)
-        scs.set(contract.address, sc)
+        try {
+          let totalSupply = await sc.totalSupply()
+          totalSupply = parseFloat(totalSupply.toString())
+          console.log(contract.address, totalSupply)
+          totalSupplies.set(contract.address, totalSupply)
+          scs.set(contract.address, sc)
+        } catch (error) {}
       })
       await Promise.all(promises)
     } catch (error) {}
-
-    contracts.map(async (contract) => {
-      let sc = scs.get(contract.address)
-      let ts = totalSupplies.get(contract.address)
-      const func = async (i) => {
-        if (i > ts) return
-
-        let tk = await ERC721TOKEN.findOne({
-          contractAddress: contract.address,
-          tokenID: i,
-        })
-        try {
-          owner = await sc.ownerOf(i)
-          if (tk) {
-            let to = tk.owner
-            if (to != owner) {
-              tk.owner = owner
-              await tk.save()
-            }
-          } else {
+    console.log(scs.size)
+    let total = contracts.length
+    let tokenID = 1
+    while (total > 0) {
+      const promises = contracts.map(async (contract) => {
+        let sc = scs.get(contract.address)
+        if (sc) {
+          let supply = totalSupplies.get(contract.address)
+          if (supply >= tokenID) {
             try {
-              let tokenURI = await sc.tokenURI(i)
-              if (tokenURI.startsWith('https://')) {
-                let newTk = new ERC721TOKEN()
-                newTk.contractAddress = contract.address
-                newTk.tokenID = i
-                newTk.tokenURI = tokenURI
-                newTk.owner = owner
-                await newTk.save()
+              let tokenURI = await sc.tokenURI(tokenID)
+              if (!tokenURI.startsWith('https://')) {
+              } else {
+                let to = await sc.ownerOf(tokenID)
+                let erc721token = await ERC721TOKEN.findOne({
+                  contractAddress: contract.address,
+                  tokenID: tokenID,
+                })
+                if (erc721token) {
+                  if (erc721token.owner != to) {
+                    erc721token.owner = to
+                    await erc721token.save()
+                  }
+                } else {
+                  if (tokenURI.startsWith('https://')) {
+                    let newTk = new ERC721TOKEN()
+                    newTk.contractAddress = contract.address
+                    newTk.tokenID = tokenID
+                    newTk.tokenURI = tokenURI
+                    newTk.owner = to
+                    await newTk.save()
+                  }
+                }
               }
             } catch (error) {
-              console.log(i)
+              console.log('error')
+              console.log(totalSupplies.get(contract.address))
+              totalSupplies.set(contract.address, 0)
+              total--
             }
           }
-        } catch (error) {}
+        }
+      })
+      await Promise.all(promises)
+      tokenID++
+    }
 
-        func(i + 1)
-      }
-      func(1)
-    })
+    // contracts.map(async (contract) => {
+    //   let sc = scs.get(contract.address)
+    //   let ts = totalSupplies.get(contract.address)
+    //   const func = async (i) => {
+    //     if (i > ts) return
+
+    //     let tk = await ERC721TOKEN.findOne({
+    //       contractAddress: contract.address,
+    //       tokenID: i,
+    //     })
+    //     try {
+    //       owner = await sc.ownerOf(i)
+    //       if (tk) {
+    //         let to = tk.owner
+    //         if (to != owner) {
+    //           tk.owner = owner
+    //           await tk.save()
+    //         }
+    //       } else {
+    //         try {
+    //           let tokenURI = await sc.tokenURI(i)
+    //           if (tokenURI.startsWith('https://')) {
+    //             let newTk = new ERC721TOKEN()
+    //             newTk.contractAddress = contract.address
+    //             newTk.tokenID = i
+    //             newTk.tokenURI = tokenURI
+    //             newTk.owner = owner
+    //             await newTk.save()
+    //           }
+    //         } catch (error) {
+    //           console.log(i)
+    //         }
+    //       }
+    //     } catch (error) {}
+
+    //     func(i + 1)
+    //   }
+    //   func(1)
+    // })
   } catch (error) {}
 }
 
