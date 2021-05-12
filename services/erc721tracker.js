@@ -16,6 +16,10 @@ const ftmScanApiKey = process.env.FTM_SCAN_API_KEY
 const validatorAddress = process.env.VALIDATORADDRESS
 const limit = 99999999999
 
+const toLowerCase = (val) => {
+  return val.toLowerCase()
+}
+
 let trackedAddresses = []
 
 const trackerc721 = async (begin, end) => {
@@ -30,7 +34,7 @@ const trackerc721 = async (begin, end) => {
     console.log('new transfer')
     let promises = tnxs.map(async (tnx) => {
       let contractInfo = {
-        address: tnx.contractAddress,
+        address: toLowerCase(tnx.contractAddress),
         name: tnx.tokenName,
         symbol: tnx.tokenSymbol,
       }
