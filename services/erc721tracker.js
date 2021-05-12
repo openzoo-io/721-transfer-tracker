@@ -17,7 +17,8 @@ const validatorAddress = process.env.VALIDATORADDRESS
 const limit = 99999999999
 
 const toLowerCase = (val) => {
-  return val.toLowerCase()
+  if (val) return val.toLowerCase()
+  else return val
 }
 
 let trackedAddresses = []
