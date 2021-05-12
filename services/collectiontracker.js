@@ -5,11 +5,19 @@ const contractutils = require('./contract.utils')
 require('../models/erc721token')
 const ERC721TOKEN = mongoose.model('ERC721TOKEN')
 
+const toLowerCase = (val) => {
+  if (val) return val.toLowerCase()
+  else return val
+}
+
 const trackCollectionTransfer = (address) => {
+  address = toLowerCase(address)
   console.log(`on transfer of ${address} started`)
   let contract = contractutils.loadContractFromAddress(address)
   if (!contract) return null
   contract.on('Transfer', async (from, to, tokenID) => {
+    from = toLowerCase(from)
+    to = toLowerCase(to)
     console.log('transfer')
     console.log(from, to, tokenID)
     let tokenURI = await contract.tokenURI(tokenID)
@@ -71,6 +79,7 @@ const trackERC721Distribution = async (contracts) => {
               if (!tokenURI.startsWith('https://')) {
               } else {
                 let to = await sc.ownerOf(tokenID)
+                to = toLowerCase(to)
                 let erc721token = await ERC721TOKEN.findOne({
                   contractAddress: contract.address,
                   tokenID: tokenID,
