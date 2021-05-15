@@ -1,6 +1,8 @@
 require('dotenv').config()
 const mongoose = require('mongoose')
 const contractutils = require('./contract.utils')
+const Tracker = require('./erc721tracker')
+const Contracts = Tracker.trackedContracts
 
 require('../models/erc721token')
 const ERC721TOKEN = mongoose.model('ERC721TOKEN')
@@ -8,44 +10,6 @@ const ERC721TOKEN = mongoose.model('ERC721TOKEN')
 const toLowerCase = (val) => {
   if (val) return val.toLowerCase()
   else return val
-}
-
-const trackCollectionTransfer = (address) => {
-  address = toLowerCase(address)
-  console.log(`on transfer of ${address} started`)
-  let contract = contractutils.loadContractFromAddress(address)
-  if (!contract) return null
-  contract.on('Transfer', async (from, to, tokenID) => {
-    from = toLowerCase(from)
-    to = toLowerCase(to)
-    console.log('transfer')
-    console.log(from, to, tokenID)
-    let tokenURI = await contract.tokenURI(tokenID)
-    if (!tokenURI.startsWith('https://')) return
-    let erc721token = await ERC721TOKEN.findOne({
-      contractAddress: address,
-      tokenID: tokenID,
-    })
-
-    if (erc721token) {
-      console.log('tk exists')
-      console.log(erc721token)
-      if (erc721token.owner != to) {
-        erc721token.owner = to
-        await erc721token.save()
-      }
-    } else {
-      let newTk = new ERC721TOKEN()
-      newTk.contractAddress = address
-      newTk.tokenID = tokenID
-      newTk.tokenURI = tokenURI
-      newTk.owner = to
-      let test = await newTk.save()
-      console.log('tk newly saved')
-      console.log(test)
-    }
-  })
-  return contract
 }
 
 const trackERC721Distribution = async (contracts) => {
@@ -58,14 +22,12 @@ const trackERC721Distribution = async (contracts) => {
         try {
           let totalSupply = await sc.totalSupply()
           totalSupply = parseFloat(totalSupply.toString())
-          console.log(contract.address, totalSupply)
           totalSupplies.set(contract.address, totalSupply)
           scs.set(contract.address, sc)
         } catch (error) {}
       })
       await Promise.all(promises)
     } catch (error) {}
-    console.log(scs.size)
     let total = contracts.length
     let tokenID = 1
     while (total > 0) {
@@ -101,8 +63,6 @@ const trackERC721Distribution = async (contracts) => {
                 }
               }
             } catch (error) {
-              console.log('error')
-              console.log(totalSupplies.get(contract.address))
               totalSupplies.set(contract.address, 0)
               total--
             }
@@ -116,7 +76,6 @@ const trackERC721Distribution = async (contracts) => {
 }
 
 const collectionTracker = {
-  trackCollectionTransfer,
   trackERC721Distribution,
 }
 
