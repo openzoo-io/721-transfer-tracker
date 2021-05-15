@@ -72,11 +72,8 @@ const trackerc721 = async (begin, end) => {
             }
             let sc = contractutils.loadContractFromAddress(contractInfo.address)
             trackedAddresses.push(contractInfo.address)
-            console.log(contractInfo.address)
             trackedContracts.push(sc)
             sc.on('Transfer', async (from, to, tokenID) => {
-              console.log('transfer')
-              console.log(from, to, tokenID)
               try {
                 from = toLowerCase(from)
                 to = toLowerCase(to)
@@ -90,9 +87,7 @@ const trackerc721 = async (begin, end) => {
                 if (erc721token) {
                   if (erc721token.owner != to) {
                     erc721token.owner = to
-                    let _saved = await erc721token.save()
-                    console.log('saved is ')
-                    console.log(_saved)
+                    await erc721token.save()
                   }
                 } else {
                   let newTk = new ERC721TOKEN()
@@ -100,14 +95,9 @@ const trackerc721 = async (begin, end) => {
                   newTk.tokenID = tokenID
                   newTk.tokenURI = tokenURI
                   newTk.owner = to
-                  let _newTkSaved = await newTk.save()
-                  console.log('new tk saved is ')
-                  console.log(_newTkSaved)
+                  await newTk.save()
                 }
-              } catch (error) {
-                console.log('on transfer error')
-                console.log(error)
-              }
+              } catch (error) {}
             })
           }
         }
