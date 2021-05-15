@@ -118,7 +118,7 @@ const trackAll721s = async () => {
       if (currentBlockHeight > limit) start = 0
       setTimeout(async () => {
         await func()
-      }, 1000 * 10)
+      }, 1000 * 1)
     } catch (error) {}
   }
   await func()
