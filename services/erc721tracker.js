@@ -83,21 +83,34 @@ const trackerc721 = async (begin, end) => {
                   contractAddress: contractInfo.address,
                   tokenID: tokenID,
                 })
+                let metadata = await axios.get(tokenURI)
+                let tokenName = ''
+                try {
+                  tokenName = metadata.data.name
+                } catch (error) {}
 
                 if (erc721token) {
                   if (erc721token.owner != to) {
                     erc721token.owner = to
+                    let now = Date.now()
+                    try {
+                      if (erc721token.createdAt > now)
+                        erc721token.createdAt = now
+                    } catch (error) {}
                     await erc721token.save()
                   }
                 } else {
                   let newTk = new ERC721TOKEN()
                   newTk.contractAddress = contractInfo.address
                   newTk.tokenID = tokenID
+                  newTk.name = tokenName
                   newTk.tokenURI = tokenURI
                   newTk.owner = to
                   await newTk.save()
                 }
-              } catch (error) {}
+              } catch (error) {
+                console.log(error)
+              }
             })
           }
         }
