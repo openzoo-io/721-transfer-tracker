@@ -7,10 +7,10 @@ let rpcapi = process.env.MAINNET_RPC
 
 const provider = new ethers.providers.JsonRpcProvider(rpcapi, 250)
 
-require('../models/erc721contract')
 const ERC721CONTRACT = mongoose.model('ERC721CONTRACT')
 const Category = mongoose.model('Category')
 const ERC721TOKEN = mongoose.model('ERC721TOKEN')
+const BannedNFT = mongoose.model('BannedNFT')
 
 const contractutils = require('./contract.utils')
 
@@ -100,13 +100,20 @@ const trackerc721 = async (begin, end) => {
                     await erc721token.save()
                   }
                 } else {
-                  let newTk = new ERC721TOKEN()
-                  newTk.contractAddress = contractInfo.address
-                  newTk.tokenID = tokenID
-                  newTk.name = tokenName
-                  newTk.tokenURI = tokenURI
-                  newTk.owner = to
-                  await newTk.save()
+                  let bannedToken = await BannedNFT.findOne({
+                    contractAddress: contractInfo.address,
+                    tokenID: tokenID,
+                  })
+                  if (bannedToken) {
+                  } else {
+                    let newTk = new ERC721TOKEN()
+                    newTk.contractAddress = contractInfo.address
+                    newTk.tokenID = tokenID
+                    newTk.name = tokenName
+                    newTk.tokenURI = tokenURI
+                    newTk.owner = to
+                    await newTk.save()
+                  }
                 }
               } catch (error) {
                 console.log(error)
