@@ -9,7 +9,7 @@ const provider = new ethers.providers.JsonRpcProvider(rpcapi, 250)
 
 const ERC721CONTRACT = mongoose.model('ERC721CONTRACT')
 const Category = mongoose.model('Category')
-const ERC721TOKEN = mongoose.model('ERC721TOKEN')
+const NFTITEM = mongoose.model('NFTITEM')
 const BannedNFT = mongoose.model('BannedNFT')
 
 const contractutils = require('./contract.utils')
@@ -51,7 +51,7 @@ const trackerc721 = async (begin, end) => {
             contracts.push(contractInfo)
             let erc721 = null
             try {
-              erc721 = await ERC721CONTRACT.findOne({
+              erc721 = await NFTITEM.findOne({
                 address: contractInfo.address,
               })
             } catch (error) {
@@ -79,7 +79,7 @@ const trackerc721 = async (begin, end) => {
                 to = toLowerCase(to)
                 let tokenURI = await sc.tokenURI(tokenID)
                 if (!tokenURI.startsWith('https://')) return
-                let erc721token = await ERC721TOKEN.findOne({
+                let erc721token = await NFTITEM.findOne({
                   contractAddress: contractInfo.address,
                   tokenID: tokenID,
                 })
@@ -106,12 +106,13 @@ const trackerc721 = async (begin, end) => {
                   })
                   if (bannedToken) {
                   } else {
-                    let newTk = new ERC721TOKEN()
+                    let newTk = new NFTITEM()
                     newTk.contractAddress = contractInfo.address
                     newTk.tokenID = tokenID
                     newTk.name = tokenName
                     newTk.tokenURI = tokenURI
                     newTk.owner = to
+                    newTk.tokenType = 721
                     await newTk.save()
                   }
                 }
