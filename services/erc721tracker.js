@@ -33,6 +33,10 @@ const trackerc721 = async (begin, end) => {
     let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`
     let result = await axios.get(request)
     let tnxs = result.data.result
+    if (tnxs) {
+      let last = tnxs[tnxs.length - 1]
+      end = parseInt(last.blockNumber)
+    }
 
     if (tnxs.length == 0) return end
     if (tnxs) {
@@ -73,6 +77,7 @@ const trackerc721 = async (begin, end) => {
             let sc = contractutils.loadContractFromAddress(contractInfo.address)
             trackedAddresses.push(contractInfo.address)
             trackedContracts.push(sc)
+            console.log(trackedAddresses)
             sc.on('Transfer', async (from, to, tokenID) => {
               try {
                 from = toLowerCase(from)
