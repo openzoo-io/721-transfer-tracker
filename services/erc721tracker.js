@@ -51,7 +51,7 @@ const trackerc721 = async (begin, end) => {
             contracts.push(contractInfo)
             let erc721 = null
             try {
-              erc721 = await NFTITEM.findOne({
+              erc721 = await ERC721CONTRACT.findOne({
                 address: contractInfo.address,
               })
             } catch (error) {
