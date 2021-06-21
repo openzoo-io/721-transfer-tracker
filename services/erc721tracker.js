@@ -117,7 +117,7 @@ const trackerc721 = async (begin, end) => {
                     newTk.name = tokenName
                     newTk.tokenURI = tokenURI
                     newTk.owner = to
-                    newTk.tokenType = 721
+                    newTk.createdAt = Date.now()
                     await newTk.save()
                   }
                 }
