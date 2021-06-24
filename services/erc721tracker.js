@@ -90,8 +90,10 @@ const trackerc721 = async (begin, end) => {
                 })
                 let metadata = await axios.get(tokenURI)
                 let tokenName = ''
+                let imageURL = ''
                 try {
                   tokenName = metadata.data.name
+                  imageURL = metadata.data.image
                 } catch (error) {}
 
                 if (erc721token) {
@@ -116,6 +118,7 @@ const trackerc721 = async (begin, end) => {
                     newTk.tokenID = tokenID
                     newTk.name = tokenName
                     newTk.tokenURI = tokenURI
+                    newTk.imageURL = imageURL
                     newTk.owner = to
                     newTk.createdAt = Date.now()
                     await newTk.save()
