@@ -3,9 +3,11 @@ const axios = require('axios')
 const mongoose = require('mongoose')
 const ethers = require('ethers')
 
-let rpcapi = process.env.MAINNET_RPC
+const rpcapi = process.env.NETWORK_RPC
+const chainID = parseInt(process.env.NETWORK_CHAINID)
+const ftmScanApiURL = process.env.FTM_SCAN_URL
 
-const provider = new ethers.providers.JsonRpcProvider(rpcapi, 250)
+const provider = new ethers.providers.JsonRpcProvider(rpcapi, chainID)
 
 const ERC721CONTRACT = mongoose.model('ERC721CONTRACT')
 const Category = mongoose.model('Category')
@@ -30,7 +32,7 @@ const trackerc721 = async (begin, end) => {
   try {
     let contracts = new Array()
 
-    let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`
+    let request = `${ftmScanApiURL}api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`
     let result = await axios.get(request)
     let tnxs = result.data.result
     if (tnxs) {
