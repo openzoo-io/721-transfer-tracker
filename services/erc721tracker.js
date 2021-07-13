@@ -99,14 +99,18 @@ const trackerc721 = async (begin, end) => {
                 } catch (error) {}
 
                 if (erc721token) {
-                  if (erc721token.owner != to) {
-                    erc721token.owner = to
-                    let now = Date.now()
-                    try {
-                      if (erc721token.createdAt > now)
-                        erc721token.createdAt = now
-                    } catch (error) {}
-                    await erc721token.save()
+                  if (to == validatorAddress) {
+                    await erc721token.remove()
+                  } else {
+                    if (erc721token.owner != to) {
+                      erc721token.owner = to
+                      let now = Date.now()
+                      try {
+                        if (erc721token.createdAt > now)
+                          erc721token.createdAt = now
+                      } catch (error) {}
+                      await erc721token.save()
+                    }
                   }
                 } else {
                   let bannedToken = await BannedNFT.findOne({
@@ -115,20 +119,21 @@ const trackerc721 = async (begin, end) => {
                   })
                   if (bannedToken) {
                   } else {
-                    let newTk = new NFTITEM()
-                    newTk.contractAddress = contractInfo.address
-                    newTk.tokenID = tokenID
-                    newTk.name = tokenName
-                    newTk.tokenURI = tokenURI
-                    newTk.imageURL = imageURL
-                    newTk.owner = to
-                    newTk.createdAt = Date.now()
-                    await newTk.save()
+                    if (to == validatorAddress) {
+                    } else {
+                      let newTk = new NFTITEM()
+                      newTk.contractAddress = contractInfo.address
+                      newTk.tokenID = tokenID
+                      newTk.name = tokenName
+                      newTk.tokenURI = tokenURI
+                      newTk.imageURL = imageURL
+                      newTk.owner = to
+                      newTk.createdAt = Date.now()
+                      await newTk.save()
+                    }
                   }
                 }
-              } catch (error) {
-                console.log(error)
-              }
+              } catch (error) {}
             })
           }
         }
