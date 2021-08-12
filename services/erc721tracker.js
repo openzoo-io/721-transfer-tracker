@@ -12,7 +12,6 @@ const provider = new ethers.providers.JsonRpcProvider(rpcapi, chainID)
 const ERC721CONTRACT = mongoose.model('ERC721CONTRACT')
 const Category = mongoose.model('Category')
 const NFTITEM = mongoose.model('NFTITEM')
-const BannedNFT = mongoose.model('BannedNFT')
 
 const contractutils = require('./contract.utils')
 
@@ -113,24 +112,17 @@ const trackerc721 = async (begin, end) => {
                     }
                   }
                 } else {
-                  let bannedToken = await BannedNFT.findOne({
-                    contractAddress: contractInfo.address,
-                    tokenID: tokenID,
-                  })
-                  if (bannedToken) {
+                  if (to == validatorAddress) {
                   } else {
-                    if (to == validatorAddress) {
-                    } else {
-                      let newTk = new NFTITEM()
-                      newTk.contractAddress = contractInfo.address
-                      newTk.tokenID = tokenID
-                      newTk.name = tokenName
-                      newTk.tokenURI = tokenURI
-                      newTk.imageURL = imageURL
-                      newTk.owner = to
-                      newTk.createdAt = Date.now()
-                      await newTk.save()
-                    }
+                    let newTk = new NFTITEM()
+                    newTk.contractAddress = contractInfo.address
+                    newTk.tokenID = tokenID
+                    newTk.name = tokenName
+                    newTk.tokenURI = tokenURI
+                    newTk.imageURL = imageURL
+                    newTk.owner = to
+                    newTk.createdAt = Date.now()
+                    await newTk.save()
                   }
                 }
               } catch (error) {}
