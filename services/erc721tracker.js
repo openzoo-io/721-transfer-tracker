@@ -39,8 +39,72 @@ const trackerc721 = async (begin, end) => {
       end = parseInt(last.blockNumber)
     }
 
-    if (tnxs.length == 0) return end
-    if (tnxs) {
+    let categories = await Category.find({
+      minterAddress: { $nin: trackedAddresses },
+      type: 721,
+    })
+
+    if (tnxs.length == 0) {
+      if (categories.length > 0) {
+        let promise = categories.map(async (category) => {
+          let address = category.minterAddress
+          let sc = contractutils.loadContractFromAddress(address)
+          trackedAddresses.push(address)
+          trackedContracts.push(sc)
+          console.log(trackedAddresses)
+          sc.on('Transfer', async (from, to, tokenID) => {
+            try {
+              from = toLowerCase(from)
+              to = toLowerCase(to)
+              let tokenURI = await sc.tokenURI(tokenID)
+              if (!tokenURI.startsWith('https://')) return
+              let erc721token = await NFTITEM.findOne({
+                contractAddress: contractInfo.address,
+                tokenID: tokenID,
+              })
+              let metadata = await axios.get(tokenURI)
+              let tokenName = ''
+              let imageURL = ''
+              try {
+                tokenName = metadata.data.name
+                imageURL = metadata.data.image
+              } catch (error) {}
+
+              if (erc721token) {
+                if (to == validatorAddress) {
+                  await erc721token.remove()
+                } else {
+                  if (erc721token.owner != to) {
+                    erc721token.owner = to
+                    let now = Date.now()
+                    try {
+                      if (erc721token.createdAt > now)
+                        erc721token.createdAt = now
+                    } catch (error) {}
+                    await erc721token.save()
+                  }
+                }
+              } else {
+                if (to == validatorAddress) {
+                } else {
+                  let newTk = new NFTITEM()
+                  newTk.contractAddress = contractInfo.address
+                  newTk.tokenID = tokenID
+                  newTk.name = tokenName
+                  newTk.tokenURI = tokenURI
+                  newTk.imageURL = imageURL
+                  newTk.owner = to
+                  newTk.createdAt = Date.now()
+                  await newTk.save()
+                }
+              }
+            } catch (error) {}
+          })
+        })
+        await Promise.all(promise)
+      }
+      return end
+    } else {
       let promises = tnxs.map(async (tnx) => {
         let contractInfo = {
           address: toLowerCase(tnx.contractAddress),
@@ -131,6 +195,61 @@ const trackerc721 = async (begin, end) => {
         }
       })
       await Promise.all(promises)
+      let categoryPromise = categories.map(async (category) => {
+        let address = category.minterAddress
+        let sc = contractutils.loadContractFromAddress(address)
+        trackedAddresses.push(address)
+        trackedContracts.push(sc)
+        console.log(trackedAddresses)
+        sc.on('Transfer', async (from, to, tokenID) => {
+          try {
+            from = toLowerCase(from)
+            to = toLowerCase(to)
+            let tokenURI = await sc.tokenURI(tokenID)
+            if (!tokenURI.startsWith('https://')) return
+            let erc721token = await NFTITEM.findOne({
+              contractAddress: contractInfo.address,
+              tokenID: tokenID,
+            })
+            let metadata = await axios.get(tokenURI)
+            let tokenName = ''
+            let imageURL = ''
+            try {
+              tokenName = metadata.data.name
+              imageURL = metadata.data.image
+            } catch (error) {}
+
+            if (erc721token) {
+              if (to == validatorAddress) {
+                await erc721token.remove()
+              } else {
+                if (erc721token.owner != to) {
+                  erc721token.owner = to
+                  let now = Date.now()
+                  try {
+                    if (erc721token.createdAt > now) erc721token.createdAt = now
+                  } catch (error) {}
+                  await erc721token.save()
+                }
+              }
+            } else {
+              if (to == validatorAddress) {
+              } else {
+                let newTk = new NFTITEM()
+                newTk.contractAddress = contractInfo.address
+                newTk.tokenID = tokenID
+                newTk.name = tokenName
+                newTk.tokenURI = tokenURI
+                newTk.imageURL = imageURL
+                newTk.owner = to
+                newTk.createdAt = Date.now()
+                await newTk.save()
+              }
+            }
+          } catch (error) {}
+        })
+      })
+      await Promise.all(categoryPromise)
     }
     return end
   } catch (error) {}
@@ -146,7 +265,7 @@ const trackAll721s = async () => {
       if (currentBlockHeight > limit) start = 0
       setTimeout(async () => {
         await func()
-      }, 1000 * 1)
+      }, 1000 * 10)
     } catch (error) {}
   }
   await func()
