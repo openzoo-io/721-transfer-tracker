@@ -137,28 +137,28 @@ const trackerc721 = async (begin, end) => {
             }
             if (!erc721) {
               try {
-                let minter = new ERC721CONTRACT()
-                minter.address = contractInfo.address
-                let contractName = await contractutils.getName(
-                  contractInfo.address,
-                )
-                minter.name = contractName
-                console.log(contractName)
-                let contractSymbol = await contractutils.getSymbol(
-                  contractInfo.address,
-                )
-                minter.symbol = contractSymbol
-                console.log(contractSymbol)
-                await minter.save()
-                let category = new Category()
-                category.minterAddress = contractInfo.address
-                category.type = 721
-                await category.save()
-              } catch (error) {
-                // console.log(error)
-                // console.log('error 7')
-                // console.log(contractInfo.address)
-              }
+                try {
+                  let minter = new ERC721CONTRACT()
+                  minter.address = contractInfo.address
+                  let contractName = await contractutils.getName(
+                    contractInfo.address,
+                  )
+                  minter.name = contractName
+                  console.log(contractName)
+                  let contractSymbol = await contractutils.getSymbol(
+                    contractInfo.address,
+                  )
+                  minter.symbol = contractSymbol
+                  console.log(contractSymbol)
+                  await minter.save()
+                } catch (error) {}
+                try {
+                  let category = new Category()
+                  category.minterAddress = contractInfo.address
+                  category.type = 721
+                  await category.save()
+                } catch (error) {}
+              } catch (error) {}
             }
             let sc = contractutils.loadContractFromAddress(contractInfo.address)
             trackedAddresses.push(contractInfo.address)
