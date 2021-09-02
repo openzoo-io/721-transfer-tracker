@@ -126,6 +126,12 @@ const trackerc721 = async (begin, end) => {
         ) {
           if (!trackedAddresses.includes(contractInfo.address)) {
             contracts.push(contractInfo)
+            try {
+              let category = new Category()
+              category.minterAddress = contractInfo.address
+              category.type = 721
+              await category.save()
+            } catch (error) {}
             let erc721 = null
             try {
               erc721 = await ERC721CONTRACT.findOne({
@@ -151,12 +157,6 @@ const trackerc721 = async (begin, end) => {
                   minter.symbol = contractSymbol
                   console.log(contractSymbol)
                   await minter.save()
-                } catch (error) {}
-                try {
-                  let category = new Category()
-                  category.minterAddress = contractInfo.address
-                  category.type = 721
-                  await category.save()
                 } catch (error) {}
               } catch (error) {}
             }
