@@ -26,6 +26,26 @@ const toLowerCase = (val) => {
 
 const trackedAddresses = []
 const trackedContracts = []
+const bannedCollections = new Map()
+
+const isBannedCollection = async (contractAddress) => {
+  let isBanned = bannedCollections.get(contractAddress)
+  if (isBanned) return true
+  try {
+    let contract_721 = await ERC721CONTRACT.findOne({
+      address: contractAddress,
+    })
+    if (contract_721) {
+      bannedCollections.set(contractAddress, true)
+      return true
+    } else {
+      bannedCollections.set(contractAddress, false)
+      return false
+    }
+  } catch (error) {
+    return false
+  }
+}
 
 const trackerc721 = async (begin, end) => {
   try {
@@ -101,6 +121,8 @@ const trackerc721 = async (begin, end) => {
                   newTk.imageURL = imageURL
                   newTk.owner = to
                   newTk.createdAt = Date.now()
+                  let isBanned = await isBannedCollection(address)
+                  newTk.isAppropriate = !isBanned
                   await newTk.save()
                 }
               }
@@ -213,6 +235,10 @@ const trackerc721 = async (begin, end) => {
                     newTk.imageURL = imageURL
                     newTk.owner = to
                     newTk.createdAt = Date.now()
+                    let isBanned = await isBannedCollection(
+                      contractInfo.address,
+                    )
+                    newTk.isAppropriate = !isBanned
                     await newTk.save()
                   }
                 }
@@ -278,6 +304,8 @@ const trackerc721 = async (begin, end) => {
                 newTk.imageURL = imageURL
                 newTk.owner = to
                 newTk.createdAt = Date.now()
+                let isBanned = await isBannedCollection(address)
+                newTk.isAppropriate = !isBanned
                 await newTk.save()
               }
             }
