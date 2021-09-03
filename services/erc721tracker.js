@@ -12,6 +12,7 @@ const provider = new ethers.providers.JsonRpcProvider(rpcapi, chainID)
 const ERC721CONTRACT = mongoose.model('ERC721CONTRACT')
 const Category = mongoose.model('Category')
 const NFTITEM = mongoose.model('NFTITEM')
+const Like = mongoose.model('Like')
 
 const contractutils = require('./contract.utils')
 
@@ -45,6 +46,15 @@ const isBannedCollection = async (contractAddress) => {
   } catch (error) {
     return false
   }
+}
+
+const removeLike = async (contractAddress, tokenID) => {
+  try {
+    await Like.remove({
+      contractAddress: contractAddress,
+      tokenID: tokenID,
+    })
+  } catch (error) {}
 }
 
 const trackerc721 = async (begin, end) => {
@@ -112,6 +122,7 @@ const trackerc721 = async (begin, end) => {
                   console.log('error 10')
                 }
                 if (to == validatorAddress) {
+                  await removeLike(address, tokenID)
                 } else {
                   let newTk = new NFTITEM()
                   newTk.contractAddress = address
@@ -201,6 +212,7 @@ const trackerc721 = async (begin, end) => {
                 if (erc721token) {
                   if (to == validatorAddress) {
                     await erc721token.remove()
+                    await removeLike(contractInfo.address, tokenID)
                   } else {
                     if (erc721token.owner != to) {
                       erc721token.owner = to
@@ -271,6 +283,7 @@ const trackerc721 = async (begin, end) => {
             if (erc721token) {
               if (to == validatorAddress) {
                 await erc721token.remove()
+                await removeLike(address, tokenID)
               } else {
                 if (erc721token.owner != to) {
                   erc721token.owner = to
