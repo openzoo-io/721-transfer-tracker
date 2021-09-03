@@ -97,6 +97,7 @@ const trackerc721 = async (begin, end) => {
               if (erc721token) {
                 if (to == validatorAddress) {
                   await erc721token.remove()
+                  await removeLike(address, tokenID)
                 } else {
                   if (erc721token.owner != to) {
                     erc721token.owner = to
@@ -238,6 +239,7 @@ const trackerc721 = async (begin, end) => {
                     console.log('error 5')
                   }
                   if (to == validatorAddress) {
+                    await removeLike(contractInfo.address, tokenID)
                   } else {
                     let newTk = new NFTITEM()
                     newTk.contractAddress = contractInfo.address
