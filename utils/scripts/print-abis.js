@@ -4,7 +4,7 @@ const solc = require("solc");
 const fs = require("fs");
 const path = require("path");
 const Web3 = require("web3");
-const web3 = new Web3(new Web3.providers.HttpProvider('https://rpc.testnet.fantom.network'));
+const web3 = new Web3(new Web3.providers.HttpProvider(process.env.NETWORK_RPC));
 const eth = web3.eth;
 try {
     const sources = {
